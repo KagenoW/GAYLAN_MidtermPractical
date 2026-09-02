@@ -1,4 +1,4 @@
-mport { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -153,6 +153,7 @@ export default function InventoryPage() {
     setRoleHighlight(e.target.value);
     table.setPageIndex(0);
   }
+
   return (
     <div>
       <div className="inline-flex gap-1 mb-8 border border-[#2B323D] rounded-md p-1 bg-[#161A21]">
@@ -177,7 +178,7 @@ export default function InventoryPage() {
           Registry ({items.length})
         </button>
       </div>
-      
+
       {view === 'form' && (
         <form
           onSubmit={handleSubmit}
@@ -283,3 +284,172 @@ export default function InventoryPage() {
               {errors.userRole && <p className="text-red-400 text-sm mt-1.5">{errors.userRole}</p>}
             </div>
           </div>
+
+          <button
+            type="submit"
+            className="mt-10 bg-[#E2A254] hover:bg-[#EDB36C] text-[#161A21] px-7 py-3 rounded-md font-medium transition focus:outline-none focus:ring-1 focus:ring-[#E2A254] focus:ring-offset-2 focus:ring-offset-[#161A21]"
+          >
+            Save to registry
+          </button>
+        </form>
+      )}
+
+      {view === 'table' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <div className="flex flex-wrap gap-4 bg-[#161A21] border border-[#2B323D] rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[#8890A0]">Filter category:</span>
+                <select value={categoryFilter} onChange={handleCategoryFilterChange} className={selectStyle}>
+                  <option value="All">All</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[#8890A0]">Highlight role:</span>
+                <select value={roleHighlight} onChange={handleRoleHighlightChange} className={selectStyle}>
+                  <option value="None">None</option>
+                  {ROLES.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {items.length === 0 ? (
+              <div className="border-2 border-dashed border-[#2B323D] rounded-lg p-12 text-center text-[#5B6470] bg-[#161A21]">
+                No gadgets yet. Add one from the "Add gadget" tab.
+              </div>
+            ) : visibleItems.length === 0 ? (
+              <div className="border-2 border-dashed border-[#2B323D] rounded-lg p-12 text-center text-[#5B6470] bg-[#161A21]">
+                No gadgets match this filter. Try selecting a different category.
+              </div>
+            ) : (
+              <div className="border border-[#2B323D] rounded-lg bg-[#161A21] overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#1B212A]">
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <tr key={headerGroup.id}>
+                          {headerGroup.headers.map((header) => (
+                            <th
+                              key={header.id}
+                              className="text-left px-4 py-3 border-b border-[#2B323D] font-medium text-[#8890A0] text-xs whitespace-nowrap"
+                            >
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                            </th>
+                          ))}
+                        </tr>
+                      ))}
+                    </thead>
+                    <tbody>
+                      {table.getRowModel().rows.map((row) => {
+                        const item = row.original;
+                        const isSelected = item.id === selectedId;
+                        const isHighlighted = roleHighlight !== 'None' && item.userRole === roleHighlight;
+
+                        let rowClass = 'cursor-pointer border-b border-[#212832] hover:bg-[#1B212A] transition';
+                        if (isSelected) {
+                          rowClass =
+                            'cursor-pointer border-b border-[#212832] border-l-2 border-l-[#E2A254] bg-[#1F2730] transition';
+                        } else if (isHighlighted) {
+                          rowClass =
+                            'cursor-pointer border-b border-[#212832] bg-[#241C10] hover:bg-[#2B2213] transition';
+                        }
+
+                        return (
+                          <tr key={row.id} onClick={() => setSelectedId(item.id)} className={rowClass}>
+                            {row.getVisibleCells().map((cell) => {
+                              if (cell.column.id === 'healthRating') {
+                                return (
+                                  <td
+                                    key={cell.id}
+                                    className={`px-4 py-3 font-mono text-[13px] font-medium ${healthTextClass(item.healthRating)}`}
+                                  >
+                                    <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${healthDotClass(item.healthRating)}`} />
+                                    {item.healthRating}
+                                  </td>
+                                );
+                              }
+                              return (
+                                <td key={cell.id} className="px-4 py-3 text-[#C3C9D3] font-mono text-[13px] whitespace-nowrap">
+                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center justify-between px-4 py-3 border-t border-[#2B323D] bg-[#1B212A]">
+                  <span className="text-sm text-[#8890A0] font-mono">
+                    Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                      className="px-3 py-1.5 text-sm border border-[#2B323D] rounded-md bg-[#161A21] text-[#C3C9D3] hover:border-[#39424F] hover:text-[#E5E9EF] disabled:opacity-30 disabled:hover:border-[#2B323D] transition focus:outline-none focus:ring-1 focus:ring-[#E2A254]"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                      className="px-3 py-1.5 text-sm border border-[#2B323D] rounded-md bg-[#161A21] text-[#C3C9D3] hover:border-[#39424F] hover:text-[#E5E9EF] disabled:opacity-30 disabled:hover:border-[#2B323D] transition focus:outline-none focus:ring-1 focus:ring-[#E2A254]"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="bg-[#161A21] border border-[#2B323D] rounded-lg p-6 sticky top-6">
+              <h3 className="text-sm font-semibold text-[#8890A0] mb-4">Item profile</h3>
+
+              {!activeItem ? (
+                <p className="text-sm text-[#5B6470]">Select a row in the table to view its profile.</p>
+              ) : (
+                <div>
+                  <p className="text-xl font-semibold text-[#E5E9EF]">{activeItem.gadgetName}</p>
+                  <p className="text-sm text-[#8890A0] mb-5 font-mono">{activeItem.category}</p>
+
+                  <div className="space-y-3 mb-5">
+                    <div className="flex justify-between text-sm border-b border-[#212832] pb-2">
+                      <span className="text-[#8890A0]">Manufacturer</span>
+                      <span className="text-[#E5E9EF] font-medium font-mono">{activeItem.manufacturer}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-b border-[#212832] pb-2">
+                      <span className="text-[#8890A0]">Health rating</span>
+                      <span className={`font-semibold font-mono flex items-center ${healthTextClass(activeItem.healthRating)}`}>
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${healthDotClass(activeItem.healthRating)}`} />
+                        {activeItem.healthRating}/100
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm border-b border-[#212832] pb-2">
+                      <span className="text-[#8890A0]">Brand</span>
+                      <span className="text-[#E5E9EF] font-medium font-mono">{activeItem.brandName}</span>
+                    </div>
+                  </div>
+
+                  <span className="inline-block text-xs font-medium font-mono px-3 py-1.5 rounded-md border border-[#E2A254]/40 text-[#E2A254] bg-[#241C10]">
+                    {activeItem.userRole}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
