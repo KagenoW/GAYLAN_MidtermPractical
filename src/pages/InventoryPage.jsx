@@ -178,3 +178,108 @@ export default function InventoryPage() {
         </button>
       </div>
       
+      {view === 'form' && (
+        <form
+          onSubmit={handleSubmit}
+          className="bg-[#161A21] border border-[#2B323D] rounded-lg p-8 sm:p-12 max-w-2xl mx-auto"
+        >
+          <div className="mb-8 pb-5 border-b border-[#2B323D]">
+            <h2 className="font-semibold text-[#E5E9EF] text-xl">New gadget entry</h2>
+            <p className="text-sm text-[#8890A0] mt-1.5">
+              Enter the specs below to log this device in the registry.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-[#8890A0] mb-2">Gadget name</label>
+              <input
+                type="text"
+                value={gadgetName}
+                onChange={(e) => setGadgetName(e.target.value)}
+                placeholder="e.g. Pixel Fold 3"
+                className={inputStyle}
+              />
+              {errors.gadgetName && <p className="text-red-400 text-sm mt-1.5">{errors.gadgetName}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#8890A0] mb-2">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={inputStyle}
+              >
+                <option value="">Select category</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              {errors.category && <p className="text-red-400 text-sm mt-1.5">{errors.category}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#8890A0] mb-2">Manufacturer</label>
+              <input
+                type="text"
+                value={manufacturer}
+                onChange={(e) => setManufacturer(e.target.value)}
+                placeholder="e.g. Google"
+                className={inputStyle}
+              />
+              {errors.manufacturer && <p className="text-red-400 text-sm mt-1.5">{errors.manufacturer}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#8890A0] mb-2">Health rating (1–100)</label>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={healthRating}
+                onChange={(e) => setHealthRating(e.target.value)}
+                placeholder="e.g. 92"
+                className={inputStyle}
+              />
+              {errors.healthRating && <p className="text-red-400 text-sm mt-1.5">{errors.healthRating}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#8890A0] mb-2">Tech brand name</label>
+              <input
+                type="text"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="e.g. Nest Labs"
+                className={inputStyle}
+              />
+              {errors.brandName && <p className="text-red-400 text-sm mt-1.5">{errors.brandName}</p>}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-[#8890A0] mb-2.5">User role</label>
+              <div className="flex gap-3">
+                {ROLES.map((role) => (
+                  <label
+                    key={role}
+                    className={
+                      userRole === role
+                        ? 'flex items-center gap-2 text-sm text-[#161A21] bg-[#E2A254] border border-[#E2A254] font-medium rounded-md px-5 py-2.5 cursor-pointer transition'
+                        : 'flex items-center gap-2 text-sm text-[#E5E9EF] border border-[#2B323D] rounded-md px-5 py-2.5 cursor-pointer hover:border-[#39424F] transition'
+                    }
+                  >
+                    <input
+                      type="radio"
+                      name="userRole"
+                      value={role}
+                      checked={userRole === role}
+                      onChange={(e) => setUserRole(e.target.value)}
+                      style={{ accentColor: '#E2A254' }}
+                    />
+                    {role}
+                  </label>
+                ))}
+              </div>
+              {errors.userRole && <p className="text-red-400 text-sm mt-1.5">{errors.userRole}</p>}
+            </div>
+          </div>
